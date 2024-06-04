@@ -1,13 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using AspNetCore.Identity.MongoDbCore.Models;
+using MongoDbGenericRepository.Attributes;
 using System.ComponentModel.DataAnnotations;
 
 namespace VillaApi.Model
 {
-    public class ApplicationUser:IdentityUser
+    [CollectionName("users")]
+
+    public class ApplicationUser : MongoIdentityUser<Guid>
     {
         [Required]
-        public string firstName { get; set; }
+        public string Name { get; set; }
         
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace VillaApi.Model.modelDto
+﻿using System.Text.Json.Serialization;
+
+namespace VillaApi.Model.modelDto
 {
     public class VillaUpdateDto
     {
@@ -9,5 +11,8 @@
         public int Sqft { get; set; }
         public string ImageUrl { get; set; }
         public string Amenity { get; set; }
+        [JsonIgnore]
+        public DateTime UpdatedDate { get; set; }=DateTime.Now;
+
     }
 }

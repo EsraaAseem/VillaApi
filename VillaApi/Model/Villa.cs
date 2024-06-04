@@ -1,14 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace VillaApi.Model
 {
     public class Villa
     {
-        //[Key]
-    //  [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [BsonId]
+        [BsonRepresentation(MongoDB.Bson.BsonType.String)]
         public Guid villaId { get; set; }
-      //  [Required]
+        //  [Required]
+        [BsonRequired]
         public string Name { get; set; }
         public string Details { get; set; }
         public double Rate { get; set; }

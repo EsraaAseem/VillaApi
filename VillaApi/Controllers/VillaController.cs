@@ -1,9 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using Microsoft.AspNetCore.Mvc;
 using VillaApi.DataAccess.Helper;
-using VillaApi.DataAccess.Repository.IRepository;
-using VillaApi.Model;
+using VillaApi.DataAccess.Service.VillaServices;
 using VillaApi.Model.modelDto;
 
 namespace VillaApi.Controllers
@@ -14,101 +11,56 @@ namespace VillaApi.Controllers
 
     public class VillaController : ControllerBase
     {
-        private readonly IVillaRepository _villaRepository;
-        private readonly IMapper _mapper;
-        protected readonly ApiResponse _response;
-        public VillaController(IVillaRepository villaRepository,IMapper mapper)
+        private readonly IVillaService _villaService;
+        public VillaController(IVillaService villaService)
         {
-            this._villaRepository = villaRepository;
-            this._mapper = mapper;
-            this._response = new();
+            _villaService = villaService;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<ApiResponse>>getVillas()
+        public async Task<ActionResult<ApiResponse>> getVillas()
         {
-            
-             try
-             {
-                  var villas = await _villaRepository.GetAllAsync();
-                  _response.HttpStatusCode = HttpStatusCode.OK;
-                  _response.Result = _mapper.Map<List<VillaDto>>(villas);
-                  return Ok(_response);
-             }
-              catch (Exception ex)
-             {
-                  _response.isSuccess = false;
-                  _response.ErrorMessages=new List<string>() { ex.ToString()};
-                return _response;
-             }
+            var villas = await _villaService.GetVillasAsync();
+            return Ok(villas);
+        }
+        [HttpGet("{villaId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> getVilla([FromRoute] Guid villaId)
+        {
+            var res = await _villaService.GetVillaAsync(villaId);
+            return Ok(res);
+        }
+        [HttpDelete("{villaId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<IActionResult> DeleteVilla([FromRoute] Guid villaId)
+        {
+            var res = await _villaService.DeleteVillaAsync(villaId);
+            return Ok(res);
         }
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>>createVilla(VillaCreateDto villaCreate)
+        public async Task<ActionResult<ApiResponse>> createVilla(VillaCreateDto villaCreate)
         {
 
-            try
-            {
-                var villaexit=await _villaRepository.GetFirstOrDefaultAsync(u=>u.Name==villaCreate.Name);
-                if(villaexit!=null)
-                {
-                    _response.HttpStatusCode=HttpStatusCode.BadRequest;
-                    _response.isSuccess = false;
-                    _response.ErrorMessages = new List<string>() { "this villa is already exit" };
-                    return _response;
-                }
-                villaCreate.CreatedDate = DateTime.Now;
-                villaCreate.UpdatedDate = DateTime.Now;
-                var villa =  _mapper.Map<Villa>(villaCreate);
-                  await _villaRepository.CreateAsync(villa);
-                _response.Result = villa;
-                _response.HttpStatusCode = HttpStatusCode.OK;
-
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.HttpStatusCode = HttpStatusCode.BadRequest;
-                _response.isSuccess = false;
-                _response.ErrorMessages = new List<string>() { ex.ToString() };
-                return _response;
-            }
+            if (!ModelState.IsValid)
+                return ApiResponse.ErrorException(HttpErrors.BadRequest, "this model not vaild");
+            var villa = await _villaService.CreateVillaAsync(villaCreate);
+            return Ok(villa);
         }
 
-        [HttpPost("update")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse>> UpdateVilla(VillaUpdateDto villaupdate)
+        [HttpPut("{villaId}")]
+        public async Task<ActionResult<ApiResponse>> UpdateVilla(Guid villaId, VillaUpdateDto villaupdate)
         {
-
-            try
-            {
-                var villaexit = await _villaRepository.GetFirstOrDefaultAsync(u => u.villaId==villaupdate.villaId);
-                if (villaexit == null)
-                {
-                    _response.HttpStatusCode = HttpStatusCode.NotFound;
-                    _response.isSuccess = false;
-                    _response.ErrorMessages = new List<string>() { "this villa not found in the databasse" };
-                    return _response;
-                }
-               // villaCreate.UpdatedDate = DateTime.Now;
-                var villa = _mapper.Map<Villa>(villaupdate);
-                await _villaRepository.UpdateAsync(villa);
-                _response.Result = villa;
-                _response.HttpStatusCode = HttpStatusCode.OK;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.HttpStatusCode = HttpStatusCode.BadRequest;
-                _response.isSuccess = false;
-                _response.ErrorMessages = new List<string>() { ex.ToString() };
-                return _response;
-            }
+            var res = await _villaService.UpdateVillaAsync(villaId, villaupdate);
+            return Ok(res);
         }
+        /*  [HttpDelete]
+          public async Task<ActionResult<ApiResponse>> DeleteVilla(Guid villaId)
+          {
+              var villaexit = await _villaRepository.GetFirstOrDefaultAsync(u => u.villaId ==villaId);
+              if (villaexit == null)
+                 return ApiResponse.ErrorException(HttpErrors.NotFound, "this villa is  not found in the databasse");
+                  await _villaRepository.RemoveAsync(villaexit);
+                  return Ok(_response);
+          }*/
     }
 }

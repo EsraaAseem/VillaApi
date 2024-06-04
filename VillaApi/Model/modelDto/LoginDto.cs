@@ -1,6 +1,13 @@
-﻿namespace VillaApi.Model.modelDto
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace VillaApi.Model.modelDto
 {
     public class LoginDto
     {
+        [Required]
+        public string UserName { get; set; }
+        [Required]
+        public string Password { get; set; }
+
     }
 }

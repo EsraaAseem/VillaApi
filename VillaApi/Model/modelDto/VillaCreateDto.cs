@@ -16,9 +16,7 @@ namespace VillaApi.Model.modelDto
         public string ImageUrl { get; set; }
         public string Amenity { get; set; }
         [JsonIgnore]
-        public DateTime CreatedDate { get; set; }
-        [JsonIgnore]
-        public DateTime UpdatedDate { get; set; }
+        public DateTime CreatedDate { get; set; }=DateTime.Now;
     }
 }
 
